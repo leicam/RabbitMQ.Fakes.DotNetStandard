@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Kyle Crowley</Authors>
+    <Description>Fake RabbitMQ implementation written in .NET Standard. Based off of RabbitMQ.Fakes (https://github.com/Parametric/RabbitMQ.Fakes)</Description>
+    <PackageTags>RabbitMQ AMQP Fake Fakes</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
