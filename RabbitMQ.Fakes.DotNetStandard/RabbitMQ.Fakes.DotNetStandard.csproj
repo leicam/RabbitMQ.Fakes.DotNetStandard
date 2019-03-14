@@ -5,6 +5,8 @@
     <Authors>Kyle Crowley</Authors>
     <Description>Fake RabbitMQ implementation written in .NET Standard. Based off of RabbitMQ.Fakes (https://github.com/Parametric/RabbitMQ.Fakes)</Description>
     <PackageTags>RabbitMQ AMQP Fake Fakes</PackageTags>
+    <RepositoryUrl>https://github.com/KyleCrowley/RabbitMQ.Fakes.DotNetStandard</RepositoryUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
