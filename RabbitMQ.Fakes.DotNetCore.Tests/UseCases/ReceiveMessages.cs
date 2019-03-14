@@ -34,7 +34,30 @@ namespace RabbitMQ.Fakes.Tests.UseCases
 
                 Assert.That(messageBody, Is.EqualTo("hello_world"));
 
+                Assert.That(rabbitServer.Queues["my_queue"].Messages.Count == 1);
                 channel.BasicAck(message.DeliveryTag, multiple: false);
+                Assert.That(rabbitServer.Queues["my_queue"].Messages.Count == 0);
+            }
+        }
+
+        [Test]
+        public void ReceiveMessagesOnQueue_AutoAckEnabled()
+        {
+            var rabbitServer = new RabbitServer();
+
+            ConfigureQueueBinding(rabbitServer, "my_exchange", "my_queue");
+            SendMessage(rabbitServer, "my_exchange", "hello_world");
+
+            var connectionFactory = new FakeConnectionFactory(rabbitServer);
+            using (var connection = connectionFactory.CreateConnection())
+            using (var channel = connection.CreateModel())
+            {
+                // First message
+                var message = channel.BasicGet("my_queue", autoAck: true);
+
+                Assert.That(message, Is.Not.Null);
+
+                Assert.That(rabbitServer.Queues["my_queue"].Messages.Count == 0);
             }
         }
 
