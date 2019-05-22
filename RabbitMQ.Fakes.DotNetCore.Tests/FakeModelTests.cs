@@ -619,7 +619,7 @@ namespace RabbitMQ.Fakes.Tests
             var message = "hello world!";
             var encodedMessage = Encoding.ASCII.GetBytes(message);
             model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
-            model.BasicConsume("my_queue", false, new EventingBasicConsumer(model));
+            model.BasicConsume("my_queue", true, new EventingBasicConsumer(model));
 
             // Act
             var deliveryTag = model._workingMessages.First().Key;
@@ -629,6 +629,35 @@ namespace RabbitMQ.Fakes.Tests
             Assert.That(node.Queues["my_queue"].Messages.Count, Is.EqualTo(0));
         }
 
+        [Test]
+        public void BasicAckMultiple()
+        {
+            var node = new RabbitServer();
+            var model = new FakeModel(node);
+
+            model.ExchangeDeclare("my_exchange", ExchangeType.Direct);
+            model.QueueDeclarePassive("my_queue");
+            model.ExchangeBind("my_queue", "my_exchange", null);
+
+            var message = "hello world!";
+            var encodedMessage = Encoding.ASCII.GetBytes(message);
+            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
+            model.BasicConsume("my_queue", true, new EventingBasicConsumer(model));
+
+            var message2 = "hello world, too!!";
+            var encodedMessage2 = Encoding.ASCII.GetBytes(message2);
+            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage2);
+            model.BasicConsume("my_queue", true, new EventingBasicConsumer(model));
+
+            // Act
+            var deliveryTag = model._workingMessages.Last().Key;
+            model.BasicAck(deliveryTag, true);
+
+            // Assert
+            Assert.That(node.Queues["my_queue"].Messages.Count, Is.EqualTo(0));
+
+
+        }
         [Test]
         public void BasicGet_MessageOnQueue_GetsMessage()
         {
