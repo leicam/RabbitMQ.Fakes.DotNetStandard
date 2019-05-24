@@ -469,6 +469,19 @@ namespace RabbitMQ.Fakes
 
         public void BasicAck(ulong deliveryTag, bool multiple)
         {
+            if (multiple)
+            {
+                while (BasicAckSingle(deliveryTag))
+                    --deliveryTag;
+            }
+            else
+            {
+                BasicAckSingle(deliveryTag);
+            }            
+        }
+
+        private bool BasicAckSingle(ulong deliveryTag)
+        {
             RabbitMessage message;
             _workingMessages.TryRemove(deliveryTag, out message);
 
@@ -482,6 +495,8 @@ namespace RabbitMQ.Fakes
                     queue.Messages.TryDequeue(out message);
                 }
             }
+
+            return message != null;
         }
 
         public void BasicReject(ulong deliveryTag, bool requeue)
