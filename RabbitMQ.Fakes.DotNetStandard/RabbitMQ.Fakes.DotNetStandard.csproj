@@ -6,7 +6,10 @@
     <Description>Fake RabbitMQ implementation written in .NET Standard. Based off of RabbitMQ.Fakes (https://github.com/Parametric/RabbitMQ.Fakes)</Description>
     <PackageTags>RabbitMQ AMQP Fake Fakes</PackageTags>
     <RepositoryUrl>https://github.com/KyleCrowley/RabbitMQ.Fakes.DotNetStandard</RepositoryUrl>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <PackageReleaseNotes>Add support for acknowledging multiple messages at once.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
