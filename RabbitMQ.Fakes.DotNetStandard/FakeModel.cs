@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Queue = RabbitMQ.Fakes.models.Queue;
 
@@ -355,7 +356,7 @@ namespace RabbitMQ.Fakes
             var body = message.Body;
 
             Func<ulong, RabbitMessage, RabbitMessage> updateFunction = (key, existingMessage) => existingMessage;
-            _workingMessages.AddOrUpdate(deliveryTag, message, updateFunction);
+            WorkingMessages.AddOrUpdate(deliveryTag, message, updateFunction);
 
             consumer.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, basicProperties, body);
         }
@@ -370,15 +371,12 @@ namespace RabbitMQ.Fakes
         }
 
         private long _lastDeliveryTag;
-        public readonly ConcurrentDictionary<ulong, RabbitMessage> _workingMessages = new ConcurrentDictionary<ulong, RabbitMessage>();
+        public readonly ConcurrentDictionary<ulong, RabbitMessage> WorkingMessages = new ConcurrentDictionary<ulong, RabbitMessage>();
 
         public BasicGetResult BasicGet(string queue, bool autoAck)
         {
-            Queue queueInstance;
-            _server.Queues.TryGetValue(queue, out queueInstance);
-
-            if (queueInstance == null)
-                return null;
+            _server.Queues.TryGetValue(queue, out var queueInstance);
+            if (queueInstance == null) return null;
 
             RabbitMessage message;
             if (autoAck)
@@ -402,8 +400,15 @@ namespace RabbitMQ.Fakes
             var basicProperties = message.BasicProperties ?? CreateBasicProperties();
             var body = message.Body;
 
-            Func<ulong, RabbitMessage, RabbitMessage> updateFunction = (key, existingMessage) => existingMessage;
-            _workingMessages.AddOrUpdate(deliveryTag, message, updateFunction);
+            if (autoAck)
+            {
+                WorkingMessages.TryRemove(deliveryTag, out _);
+            }
+            else
+            {
+                RabbitMessage UpdateFunction(ulong key, RabbitMessage existingMessage) => existingMessage;
+                WorkingMessages.AddOrUpdate(deliveryTag, message, UpdateFunction);
+            }
 
             return new BasicGetResult(deliveryTag, redelivered, exchange, routingKey, messageCount, basicProperties, body);
         }
@@ -483,7 +488,7 @@ namespace RabbitMQ.Fakes
         private bool BasicAckSingle(ulong deliveryTag)
         {
             RabbitMessage message;
-            _workingMessages.TryRemove(deliveryTag, out message);
+            WorkingMessages.TryRemove(deliveryTag, out message);
 
             if (message != null)
             {
@@ -506,18 +511,26 @@ namespace RabbitMQ.Fakes
 
         public void BasicNack(ulong deliveryTag, bool multiple, bool requeue)
         {
-            RabbitMessage message;
-            _workingMessages.TryRemove(deliveryTag, out message);
+            if (requeue) return;
 
-            if (message != null && requeue)
+            foreach (var queue in WorkingMessages.Select(m => m.Value.Queue))
             {
-                Queue queueInstance;
-                _server.Queues.TryGetValue(message.Queue, out queueInstance);
+                _server.Queues.TryGetValue(queue, out var queueInstance);
 
                 if (queueInstance != null)
                 {
-                    queueInstance.PublishMessage(message);
+                    queueInstance.Messages = new ConcurrentQueue<RabbitMessage>();
                 }
+            }
+
+            WorkingMessages.TryRemove(deliveryTag, out var message);
+            if (message == null) return;
+
+            foreach (var workingMessage in WorkingMessages)
+            {
+                _server.Queues.TryGetValue(workingMessage.Value.Queue, out var queueInstance);
+
+                queueInstance?.PublishMessage(workingMessage.Value);
             }
         }
 
@@ -525,7 +538,7 @@ namespace RabbitMQ.Fakes
         {
             if (requeue)
             {
-                foreach (var message in _workingMessages)
+                foreach (var message in WorkingMessages)
                 {
                     Queue queueInstance;
                     _server.Queues.TryGetValue(message.Value.Queue, out queueInstance);
@@ -537,7 +550,7 @@ namespace RabbitMQ.Fakes
                 }
             }
 
-            _workingMessages.Clear();
+            WorkingMessages.Clear();
         }
 
         public void BasicRecoverAsync(bool requeue)
