@@ -15,7 +15,7 @@ namespace RabbitMQ.Fakes.models
 
         public bool IsAutoDelete { get; set; }
 
-        public IDictionary Arguments = new Dictionary<string, object>();
+        public IDictionary<string, object> Arguments = new Dictionary<string, object>();
 
         public ConcurrentQueue<RabbitMessage> Messages = new ConcurrentQueue<RabbitMessage>();
         public ConcurrentDictionary<string, ExchangeQueueBinding> Bindings = new ConcurrentDictionary<string, ExchangeQueueBinding>();

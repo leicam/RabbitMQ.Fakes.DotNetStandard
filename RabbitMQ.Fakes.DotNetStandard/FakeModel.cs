@@ -207,7 +207,7 @@ namespace RabbitMQ.Fakes
                 IsDurable = durable,
                 IsExclusive = exclusive,
                 IsAutoDelete = autoDelete,
-                Arguments = arguments as IDictionary
+                Arguments = arguments
             };
 
             Func<string, Queue, Queue> updateFunction = (name, existing) => existing;
@@ -525,6 +525,24 @@ namespace RabbitMQ.Fakes
 
             WorkingMessages.TryRemove(deliveryTag, out var message);
             if (message == null) return;
+
+            // As per the RabbitMQ spec, we need to check if this message should be delivered to a Dead Letter Exchange (DLX) if:
+            // 1) The message was NAcked or Rejected
+            // 2) Requeue = false
+            // See: https://www.rabbitmq.com/dlx.html
+            _server.Queues.TryGetValue(message.Queue, out var processingQueue);
+            if
+            (
+                processingQueue.Arguments != null
+                    && processingQueue.Arguments.TryGetValue("x-dead-letter-exchange", out var dlx)
+                    && _server.Exchanges.TryGetValue((string)dlx, out var exchange)
+            )
+            {
+                // Queue has a DLX and it exists on the server.
+                // Publish the message to the DLX.
+                exchange.PublishMessage(message);
+                return;
+            }
 
             foreach (var workingMessage in WorkingMessages)
             {

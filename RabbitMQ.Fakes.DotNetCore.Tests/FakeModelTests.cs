@@ -758,5 +758,63 @@ namespace RabbitMQ.Fakes.Tests
             Assert.That(node.Queues["my_queue"].Messages.Count, Is.EqualTo(expectedMessageCount));
             Assert.That(model.WorkingMessages.Count, Is.EqualTo(expectedMessageCount));
         }
+
+        [Test]
+        public void BasicRejectDLX()
+        {
+            var node = new RabbitServer();
+            var model = new FakeModel(node);
+
+            model.ExchangeDeclare("dead_letter_exchange", ExchangeType.Direct);
+            model.QueueDeclare("error_queue");
+            model.ExchangeBind("error_queue", "dead_letter_exchange", null);
+
+            model.ExchangeDeclare("my_exchange", ExchangeType.Direct);
+            model.QueueDeclare("my_queue", arguments: new Dictionary<string, object>
+            {
+                { "x-dead-letter-exchange", "dead_letter_exchange" },
+                { "x-dead-letter-routing-key", "error_queue" }
+            });
+            model.ExchangeBind("my_queue", "my_exchange", null);
+
+            var message = "hello world!";
+            var encodedMessage = Encoding.ASCII.GetBytes(message);
+            node.Queues["my_queue"].Messages.Enqueue(new RabbitMessage() { Queue = "my_queue", Body = encodedMessage });
+            var rabbitMessage = model.BasicGet("my_queue", false);
+
+            // Act
+            model.BasicReject(rabbitMessage.DeliveryTag, requeue: false);
+
+            // Assert
+            Assert.That(node.Queues["my_queue"].Messages.Count, Is.EqualTo(0));
+            Assert.That(node.Queues["error_queue"].Messages.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BasicRejectNoDLX()
+        {
+            var node = new RabbitServer();
+            var model = new FakeModel(node);
+
+            model.ExchangeDeclare("dead_letter_exchange", ExchangeType.Direct);
+            model.QueueDeclare("error_queue");
+            model.ExchangeBind("error_queue", "dead_letter_exchange", null);
+
+            model.ExchangeDeclare("my_exchange", ExchangeType.Direct);
+            model.QueueDeclare("my_queue");
+            model.ExchangeBind("my_queue", "my_exchange", null);
+
+            var message = "hello world!";
+            var encodedMessage = Encoding.ASCII.GetBytes(message);
+            node.Queues["my_queue"].Messages.Enqueue(new RabbitMessage() { Queue = "my_queue", Body = encodedMessage });
+            var rabbitMessage = model.BasicGet("my_queue", false);
+
+            // Act
+            model.BasicReject(rabbitMessage.DeliveryTag, requeue: false);
+
+            // Assert
+            Assert.That(node.Queues["my_queue"].Messages.Count, Is.EqualTo(0));
+            Assert.That(node.Queues["error_queue"].Messages.Count, Is.EqualTo(0));
+        }
     }
 }
