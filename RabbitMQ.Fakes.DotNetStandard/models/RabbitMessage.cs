@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace RabbitMQ.Fakes.models
+namespace RabbitMQ.Fakes.DotNetStandard.Models
 {
     public class RabbitMessage
     {

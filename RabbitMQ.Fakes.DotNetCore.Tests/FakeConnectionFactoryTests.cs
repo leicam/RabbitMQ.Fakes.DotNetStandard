@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
+using RabbitMQ.Fakes.DotNetStandard;
 
-namespace RabbitMQ.Fakes.Tests
+namespace RabbitMQ.Fakes.DotNetCore.Tests
 {
     [TestFixture]
     public class FakeConnectionFactoryTests

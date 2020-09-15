@@ -1,4 +1,4 @@
-﻿namespace RabbitMQ.Fakes.models
+﻿namespace RabbitMQ.Fakes.DotNetStandard.Models
 {
     public class ExchangeQueueBinding
     {

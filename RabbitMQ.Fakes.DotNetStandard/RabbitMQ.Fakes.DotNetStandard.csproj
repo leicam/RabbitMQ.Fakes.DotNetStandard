@@ -6,14 +6,16 @@
     <Description>Fake RabbitMQ implementation written in .NET Standard. Based off of RabbitMQ.Fakes (https://github.com/Parametric/RabbitMQ.Fakes)</Description>
     <PackageTags>RabbitMQ AMQP Fake Fakes</PackageTags>
     <RepositoryUrl>https://github.com/KyleCrowley/RabbitMQ.Fakes.DotNetStandard</RepositoryUrl>
-    <Version>1.0.4</Version>
-    <AssemblyVersion>1.0.4.0</AssemblyVersion>
-    <FileVersion>1.0.4.0</FileVersion>
-    <PackageReleaseNotes>Added support for Dead Letter Exchanges (DLX).</PackageReleaseNotes>
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <PackageReleaseNotes>v2.0.0
+BREAKING CHANGE: Upgraded RabbitMQ.Client to version 6.2.1.
+BREAKING CHANGE: Modified Fakes to support changes (access modifiers, etc.) made between 5.* and 6.* in the RabbitMQ.Client library.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.2.1" />
   </ItemGroup>
 
 </Project>

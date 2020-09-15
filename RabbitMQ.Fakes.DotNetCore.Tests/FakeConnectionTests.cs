@@ -1,7 +1,9 @@
 ﻿using NUnit.Framework;
+using RabbitMQ.Fakes.DotNetStandard;
+using System;
 using System.Linq;
 
-namespace RabbitMQ.Fakes.Tests
+namespace RabbitMQ.Fakes.DotNetCore.Tests
 {
     [TestFixture]
     public class FakeConnectionTests
@@ -56,7 +58,7 @@ namespace RabbitMQ.Fakes.Tests
             var connection = new FakeConnection(new RabbitServer());
 
             // Act
-            connection.Close(timeout: 2);
+            connection.Close(timeout: TimeSpan.FromSeconds(2));
 
             // Assert
             Assert.That(connection.IsOpen, Is.False);
@@ -85,7 +87,7 @@ namespace RabbitMQ.Fakes.Tests
             var connection = new FakeConnection(new RabbitServer());
 
             // Act
-            connection.Close(reasonCode: 3, reasonText: "foo", timeout: 4);
+            connection.Close(reasonCode: 3, reasonText: "foo", timeout: TimeSpan.FromSeconds(4));
 
             // Assert
             Assert.That(connection.IsOpen, Is.False);
@@ -129,7 +131,7 @@ namespace RabbitMQ.Fakes.Tests
             var connection = new FakeConnection(new RabbitServer());
 
             // Act
-            connection.Abort(timeout: 2);
+            connection.Abort(timeout: TimeSpan.FromSeconds(2));
 
             // Assert
             Assert.That(connection.IsOpen, Is.False);
@@ -158,7 +160,7 @@ namespace RabbitMQ.Fakes.Tests
             var connection = new FakeConnection(new RabbitServer());
 
             // Act
-            connection.Abort(reasonCode: 3, reasonText: "foo", timeout: 4);
+            connection.Abort(reasonCode: 3, reasonText: "foo", timeout: TimeSpan.FromSeconds(4));
 
             // Assert
             Assert.That(connection.IsOpen, Is.False);

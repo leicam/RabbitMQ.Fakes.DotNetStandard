@@ -1,114 +1,60 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Net;
 
-namespace RabbitMQ.Fakes
+namespace RabbitMQ.Fakes.DotNetStandard
 {
     public class FakeConnection : IConnection
     {
         private readonly RabbitServer _server;
 
-        public FakeConnection(RabbitServer server)
-        {
-            _server = server;
-            Models = new List<FakeModel>();
-        }
+        #region Properties
 
-        public List<FakeModel> Models { get; private set; }
+        #region INetworkConnection Implementation
 
-        public EndPoint LocalEndPoint { get; set; }
+        public int LocalPort { get; }
 
-        public EndPoint RemoteEndPoint { get; set; }
+        public int RemotePort { get; }
 
-        public int LocalPort { get; set; }
+        #endregion INetworkConnection Implementation
 
-        public int RemotePort { get; set; }
+        #region IConnection Implementation
 
-        public void Dispose()
-        {
-        }
+        public IDictionary<string, object> ClientProperties { get; set; }
 
-        public IModel CreateModel()
-        {
-            var model = new FakeModel(_server);
-            Models.Add(model);
-
-            return model;
-        }
-
-        public void Close()
-        {
-            Close(1, null, 0);
-        }
-
-        public void Close(ushort reasonCode, string reasonText)
-        {
-            Close(reasonCode, reasonText, 0);
-        }
-
-        public void Close(int timeout)
-        {
-            Close(1, null, timeout);
-        }
-
-        public void Close(ushort reasonCode, string reasonText, int timeout)
-        {
-            IsOpen = false;
-            CloseReason = new ShutdownEventArgs(ShutdownInitiator.Library, reasonCode, reasonText);
-
-            Models.ForEach(m => m.Close());
-        }
-
-        public void Abort()
-        {
-            Abort(1, null, 0);
-        }
-
-        public void Abort(int timeout)
-        {
-            Abort(1, null, timeout);
-        }
-
-        public void Abort(ushort reasonCode, string reasonText)
-        {
-            Abort(reasonCode, reasonText, 0);
-        }
-
-        public void Abort(ushort reasonCode, string reasonText, int timeout)
-        {
-            IsOpen = false;
-            CloseReason = new ShutdownEventArgs(ShutdownInitiator.Library, reasonCode, reasonText);
-
-            this.Models.ForEach(m => m.Abort());
-        }
-
-        public void HandleConnectionBlocked(string reason)
-        {
-        }
-
-        public void HandleConnectionUnblocked()
-        {
-        }
-
-        public AmqpTcpEndpoint Endpoint { get; set; }
-
-        public IProtocol Protocol { get; set; }
-
-        IDictionary<string, object> IConnection.ServerProperties
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public string ClientProvidedName { get; }
 
         IList<ShutdownReportEntry> IConnection.ShutdownReport
         {
             get { throw new NotImplementedException(); }
         }
 
-        public string ClientProvidedName { get; }
-        public ConsumerWorkService ConsumerWorkService { get; }
+        public IDictionary<string, object> ServerProperties { get; set; }
+
+        public IProtocol Protocol { get; set; }
+
+        public AmqpTcpEndpoint[] KnownHosts { get; set; }
+
+        public bool IsOpen { get; set; }
+
+        public TimeSpan Heartbeat { get; set; }
+
+        public uint FrameMax { get; set; }
+
+        public AmqpTcpEndpoint Endpoint { get; set; }
+
+        public ushort ChannelMax { get; set; }
+
+        public ShutdownEventArgs CloseReason { get; set; }
+
+        #endregion IConnection Implementation
+
+        public List<FakeModel> Models { get; private set; }
+
+        #endregion Properties
+
+        #region Event Handlers
 
         event EventHandler<CallbackExceptionEventArgs> IConnection.CallbackException
         {
@@ -117,7 +63,9 @@ namespace RabbitMQ.Fakes
         }
 
         public event EventHandler<EventArgs> RecoverySucceeded;
+
         public event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;
+
         public event EventHandler<ConnectionBlockedEventArgs> ConnectionBlocked;
 
         event EventHandler<ShutdownEventArgs> IConnection.ConnectionShutdown
@@ -128,29 +76,99 @@ namespace RabbitMQ.Fakes
 
         public event EventHandler<EventArgs> ConnectionUnblocked;
 
-        public ushort ChannelMax { get; set; }
+        #endregion Event Handlers
 
-        IDictionary<string, object> IConnection.ClientProperties
+        #region Constructors
+
+        public FakeConnection(RabbitServer server)
         {
-            get { throw new NotImplementedException(); }
+            _server = server;
+            Models = new List<FakeModel>();
         }
 
-        public uint FrameMax { get; set; }
+        #endregion Constructors
 
-        public ushort Heartbeat { get; set; }
+        #region Public Methods
 
-        public IDictionary ClientProperties { get; set; }
+        #region IConnection Implementation
 
-        public IDictionary ServerProperties { get; set; }
+        public void Abort(ushort reasonCode, string reasonText, TimeSpan timeout)
+        {
+            IsOpen = false;
+            CloseReason = new ShutdownEventArgs(ShutdownInitiator.Library, reasonCode, reasonText);
 
-        public AmqpTcpEndpoint[] KnownHosts { get; set; }
+            this.Models.ForEach(m => m.Abort());
+        }
 
-        public ShutdownEventArgs CloseReason { get; set; }
+        public void Abort(TimeSpan timeout)
+        {
+            Abort(1, null, timeout);
+        }
 
-        public bool IsOpen { get; set; }
+        public void Abort(ushort reasonCode, string reasonText)
+        {
+            Abort(reasonCode, reasonText, TimeSpan.FromSeconds(0));
+        }
 
-        public bool AutoClose { get; set; }
+        public void Abort()
+        {
+            Abort(1, null, TimeSpan.FromSeconds(0));
+        }
 
-        public IList ShutdownReport { get; set; }
+        public void Close(ushort reasonCode, string reasonText, TimeSpan timeout)
+        {
+            IsOpen = false;
+            CloseReason = new ShutdownEventArgs(ShutdownInitiator.Library, reasonCode, reasonText);
+
+            Models.ForEach(m => m.Close());
+        }
+
+        public void Close(TimeSpan timeout)
+        {
+            Close(1, null, timeout);
+        }
+
+        public void Close(ushort reasonCode, string reasonText)
+        {
+            Close(reasonCode, reasonText, TimeSpan.FromSeconds(0));
+        }
+
+        public void Close()
+        {
+            Close(1, null, TimeSpan.FromSeconds(0));
+        }
+
+        public IModel CreateModel()
+        {
+            var model = new FakeModel(_server);
+            Models.Add(model);
+
+            return model;
+        }
+
+        public void HandleConnectionBlocked(string reason)
+        {
+        }
+
+        public void HandleConnectionUnblocked()
+        {
+        }
+
+        public void UpdateSecret(string newSecret, string reason)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion IConnection Implementation
+
+        #region IDisposable Implementation
+
+        public void Dispose()
+        {
+        }
+
+        #endregion IDisposable Implementation
+
+        #endregion Public Methods
     }
 }

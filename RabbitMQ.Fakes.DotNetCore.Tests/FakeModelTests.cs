@@ -1,16 +1,15 @@
-﻿using System;
+﻿using NUnit.Framework;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using RabbitMQ.Fakes.DotNetStandard;
+using RabbitMQ.Fakes.DotNetStandard.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FluentAssertions;
-using NUnit.Framework;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Framing;
-using RabbitMQ.Fakes.models;
-using Queue = RabbitMQ.Fakes.models.Queue;
+using Queue = RabbitMQ.Fakes.DotNetStandard.Models.Queue;
 
-namespace RabbitMQ.Fakes.Tests
+namespace RabbitMQ.Fakes.DotNetCore.Tests
 {
     [TestFixture]
     public class FakeModelTests
@@ -61,22 +60,6 @@ namespace RabbitMQ.Fakes.Tests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-        }
-
-        [Test]
-        [TestCase(true)]
-        [TestCase(false)]
-        public void ChannelFlow_SetsIfTheChannelIsActive(bool value)
-        {
-            // Arrange
-            var node = new RabbitServer();
-            var model = new FakeModel(node);
-
-            // Act
-            model.ChannelFlow(value);
-
-            // Assert
-            Assert.That(model.IsChannelFlowActive, Is.EqualTo(value));
         }
 
         [Test]
@@ -600,7 +583,7 @@ namespace RabbitMQ.Fakes.Tests
             var encodedMessage = Encoding.ASCII.GetBytes(message);
 
             // Act
-            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
+            model.BasicPublish("my_exchange", null, null, encodedMessage);
 
             // Assert
             Assert.That(node.Queues["my_queue"].Messages.Count, Is.EqualTo(1));
@@ -619,7 +602,7 @@ namespace RabbitMQ.Fakes.Tests
 
             var message = "hello world!";
             var encodedMessage = Encoding.ASCII.GetBytes(message);
-            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
+            model.BasicPublish("my_exchange", null, null, encodedMessage);
             model.BasicConsume("my_queue", true, new EventingBasicConsumer(model));
 
             // Act
@@ -642,12 +625,12 @@ namespace RabbitMQ.Fakes.Tests
 
             var message = "hello world!";
             var encodedMessage = Encoding.ASCII.GetBytes(message);
-            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
+            model.BasicPublish("my_exchange", null, null, encodedMessage);
             model.BasicConsume("my_queue", true, new EventingBasicConsumer(model));
 
             var message2 = "hello world, too!!";
             var encodedMessage2 = Encoding.ASCII.GetBytes(message2);
-            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage2);
+            model.BasicPublish("my_exchange", null, null, encodedMessage2);
             model.BasicConsume("my_queue", true, new EventingBasicConsumer(model));
 
             // Act
@@ -671,13 +654,13 @@ namespace RabbitMQ.Fakes.Tests
 
             var message = "hello world!";
             var encodedMessage = Encoding.ASCII.GetBytes(message);
-            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
+            model.BasicPublish("my_exchange", null, null, encodedMessage);
 
             // Act
             var response = model.BasicGet("my_queue", false);
 
             // Assert
-            Assert.That(response.Body, Is.EqualTo(encodedMessage));
+            Assert.That(response.Body.Span.ToArray(), Is.EqualTo(encodedMessage));
             Assert.That(response.DeliveryTag, Is.GreaterThan(0));
         }
 
@@ -713,7 +696,7 @@ namespace RabbitMQ.Fakes.Tests
 
         [TestCase(true, 1, TestName = "If requeue param to BasicNack is true, the message that is nacked should remain in Rabbit")]
         [TestCase(false, 0, TestName = "If requeue param to BasicNack is false, the message that is nacked should be removed from Rabbit")]
-        public void Nacking_Message_Should_Not_Reenqueue_Brand_New_Message(bool requeue, int expectedMessageCount) 
+        public void Nacking_Message_Should_Not_Reenqueue_Brand_New_Message(bool requeue, int expectedMessageCount)
         {
             // arrange
             var node = new RabbitServer();
@@ -724,7 +707,7 @@ namespace RabbitMQ.Fakes.Tests
             model.ExchangeBind("my_queue", "my_exchange", null);
 
             var encodedMessage = Encoding.ASCII.GetBytes("hello world!");
-            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
+            model.BasicPublish("my_exchange", null, null, encodedMessage);
             model.BasicConsume("my_queue", false, new EventingBasicConsumer(model));
 
             // act
@@ -749,7 +732,7 @@ namespace RabbitMQ.Fakes.Tests
             model.ExchangeBind("my_queue", "my_exchange", null);
 
             var encodedMessage = Encoding.ASCII.GetBytes("hello world!");
-            model.BasicPublish("my_exchange", null, new BasicProperties(), encodedMessage);
+            model.BasicPublish("my_exchange", null, null, encodedMessage);
 
             // act
             var message = model.BasicGet("my_queue", autoAck);

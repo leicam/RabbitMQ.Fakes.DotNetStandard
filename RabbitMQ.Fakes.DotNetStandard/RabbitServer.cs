@@ -1,12 +1,12 @@
-﻿using RabbitMQ.Fakes.models;
+﻿using RabbitMQ.Fakes.DotNetStandard.Models;
 using System.Collections.Concurrent;
 
-namespace RabbitMQ.Fakes
+namespace RabbitMQ.Fakes.DotNetStandard
 {
     public class RabbitServer
     {
         public ConcurrentDictionary<string, Exchange> Exchanges = new ConcurrentDictionary<string, Exchange>();
-        public ConcurrentDictionary<string, models.Queue> Queues = new ConcurrentDictionary<string, models.Queue>();
+        public ConcurrentDictionary<string, Queue> Queues = new ConcurrentDictionary<string, Queue>();
 
         public void Reset()
         {

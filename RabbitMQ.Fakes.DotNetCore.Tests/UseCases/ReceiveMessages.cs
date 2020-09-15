@@ -1,13 +1,12 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Framing;
+using RabbitMQ.Fakes.DotNetStandard;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RabbitMQ.Fakes.Tests.UseCases
+namespace RabbitMQ.Fakes.DotNetCore.Tests.UseCases
 {
     [TestFixture]
     public class ReceiveMessages
@@ -30,7 +29,7 @@ namespace RabbitMQ.Fakes.Tests.UseCases
                 var message = channel.BasicGet("my_queue", autoAck: false);
 
                 Assert.That(message, Is.Not.Null);
-                var messageBody = Encoding.ASCII.GetString(message.Body);
+                var messageBody = Encoding.ASCII.GetString(message.Body.ToArray());
 
                 Assert.That(messageBody, Is.EqualTo("hello_world"));
 
@@ -67,7 +66,7 @@ namespace RabbitMQ.Fakes.Tests.UseCases
             var rabbitServer = new RabbitServer();
 
             ConfigureQueueBinding(rabbitServer, "my_exchange", "my_queue");
-            var basicProperties = new BasicProperties
+            var basicProperties = new FakeBasicProperties
             {
                 Headers = new Dictionary<string, object>() { { "TestKey", "TestValue" } },
                 CorrelationId = Guid.NewGuid().ToString(),
@@ -95,7 +94,7 @@ namespace RabbitMQ.Fakes.Tests.UseCases
                 var message = channel.BasicGet("my_queue", autoAck: false);
 
                 Assert.That(message, Is.Not.Null);
-                var messageBody = Encoding.ASCII.GetString(message.Body);
+                var messageBody = Encoding.ASCII.GetString(message.Body.ToArray());
 
                 Assert.That(messageBody, Is.EqualTo("hello_world"));
 
@@ -104,67 +103,6 @@ namespace RabbitMQ.Fakes.Tests.UseCases
                 actualBasicProperties.Should().BeEquivalentTo(basicProperties);
 
                 channel.BasicAck(message.DeliveryTag, multiple: false);
-            }
-        }
-
-        [Test]
-        public void QueueingConsumer_MessagesOnQueueBeforeConsumerIsCreated_ReceiveMessagesOnQueue()
-        {
-            var rabbitServer = new RabbitServer();
-
-            ConfigureQueueBinding(rabbitServer, "my_exchange", "my_queue");
-            SendMessage(rabbitServer, "my_exchange", "hello_world");
-
-            var connectionFactory = new FakeConnectionFactory(rabbitServer);
-            using (var connection = connectionFactory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                var consumer = new QueueingBasicConsumer(channel);
-                channel.BasicConsume("my_queue", false, consumer);
-
-                BasicDeliverEventArgs messageOut;
-                if (consumer.Queue.Dequeue(5000, out messageOut))
-                {
-                    var message = (BasicDeliverEventArgs)messageOut;
-                    var messageBody = Encoding.ASCII.GetString(message.Body);
-
-                    Assert.That(messageBody, Is.EqualTo("hello_world"));
-
-                    channel.BasicAck(message.DeliveryTag, multiple: false);
-                }
-
-                Assert.That(messageOut, Is.Not.Null);
-            }
-        }
-
-        [Test]
-        public void QueueingConsumer_MessagesSentAfterConsumerIsCreated_ReceiveMessagesOnQueue()
-        {
-            var rabbitServer = new RabbitServer();
-
-            ConfigureQueueBinding(rabbitServer, "my_exchange", "my_queue");
-
-            var connectionFactory = new FakeConnectionFactory(rabbitServer);
-            using (var connection = connectionFactory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                var consumer = new QueueingBasicConsumer(channel);
-                channel.BasicConsume("my_queue", false, consumer);
-
-                SendMessage(rabbitServer, "my_exchange", "hello_world");
-
-                BasicDeliverEventArgs messageOut;
-                if (consumer.Queue.Dequeue(5000, out messageOut))
-                {
-                    var message = (BasicDeliverEventArgs)messageOut;
-                    var messageBody = Encoding.ASCII.GetString(message.Body);
-
-                    Assert.That(messageBody, Is.EqualTo("hello_world"));
-
-                    channel.BasicAck(message.DeliveryTag, multiple: false);
-                }
-
-                Assert.That(messageOut, Is.Not.Null);
             }
         }
 
