@@ -2,17 +2,21 @@
 
 [![NuGet Version and Downloads count](https://buildstats.info/nuget/RabbitMQ.Fakes.DotNetStandard)](https://www.nuget.org/packages/RabbitMQ.Fakes.DotNetStandard)
 
-RabbitMQ.Fakes.DotNetStandard is a .NET Standard 2.0 library (forked from the [RabbitMQ.Fakes](https://github.com/Parametric/RabbitMQ.Fakes) library) that contains fake implementations of the RabbitMQ.Client interfaces.  These are intended to be used for testing so that unit tests who depend on RabbitMQ can be executed fully in memory withouth the dependence on an external RabbitMQ server.
+__RabbitMQ.Fakes.DotNetStandard__ is a .NET Standard 2.0 library (forked from the [RabbitMQ.Fakes](https://github.com/Parametric/RabbitMQ.Fakes) library) that contains fake implementations of the interfaces defined in the __[RabbitMQ.Client](https://github.com/rabbitmq/rabbitmq-dotnet-client)__ library.
+
+The implementation is entirely in-memory, which eliminates the dependency on a live RabbitMQ server for unit testing.
+
+__NOTE:__ This library is inteded to be used for testing purposes, __only__ (a la [Microsoft.EntityFrameworkCore.InMemory](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.InMemory/)).
 
 # Differences between RabbitMQ.Fakes and RabbitMQ.Fakes.DotNetStandard
 
-__[RabbitMQ.Fakes](https://github.com/Parametric/RabbitMQ.Fakes)__ is a .NET __Framework__ 4.5 library, which is only compatible with .NET Framework.
+__RabbitMQ.Fakes__ is a .NET __Framework__ 4.5 library, which is only compatible with .NET Framework.
 
 __RabbitMQ.Fakes.DotNetStandard__ is a .NET __Standard__ 2.0 library, which is compatible with __both__ .NET Framework and .NET Core.
 
 # RabbitMQ.Client versions
 
-`RabbitMQ.Fakes.DotNetStandard` has a dependency on the __[RabbitMQ.Client](https://github.com/rabbitmq/rabbitmq-dotnet-client)__ library.
+__RabbitMQ.Fakes.DotNetStandard__ has a dependency on the __[RabbitMQ.Client](https://github.com/rabbitmq/rabbitmq-dotnet-client)__ library.
 
 This may cause conflicts if you are referencing __RabbitMQ.Fakes.DotNetStandard__ and __RabbitMQ.Client__ (e.g. in a test project) with different versions of __RabbitMQ.Client__.
 
