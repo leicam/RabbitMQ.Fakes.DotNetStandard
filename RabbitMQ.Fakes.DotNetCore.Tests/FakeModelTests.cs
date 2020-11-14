@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using FluentAssertions;
+using NUnit.Framework;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Fakes.DotNetStandard;
@@ -79,9 +80,9 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDeclare(exchange: exchangeName, type: exchangeType, durable: isDurable, autoDelete: isAutoDelete, arguments: arguments);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(1));
+            node.Exchanges.Should().ContainKey(exchangeName, "an exchange was declared with name {0}", exchangeName);
 
-            var exchange = node.Exchanges.First();
+            var exchange = node.Exchanges[exchangeName];
             AssertExchangeDetails(exchange, exchangeName, isAutoDelete, arguments, isDurable, exchangeType);
         }
 
@@ -100,9 +101,9 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDeclare(exchange: exchangeName, type: exchangeType, durable: isDurable);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(1));
+            node.Exchanges.Should().ContainKey(exchangeName, "an exchange was declared with name {0}", exchangeName);
 
-            var exchange = node.Exchanges.First();
+            var exchange = node.Exchanges[exchangeName];
             AssertExchangeDetails(exchange, exchangeName, false, null, isDurable, exchangeType);
         }
 
@@ -120,9 +121,9 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDeclare(exchange: exchangeName, type: exchangeType);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(1));
+            node.Exchanges.Should().ContainKey(exchangeName, "an exchange was declared with name {0}", exchangeName);
 
-            var exchange = node.Exchanges.First();
+            var exchange = node.Exchanges[exchangeName];
             AssertExchangeDetails(exchange, exchangeName, false, null, false, exchangeType);
         }
 
@@ -139,9 +140,9 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDeclarePassive(exchange: exchangeName);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(1));
+            node.Exchanges.Should().ContainKey(exchangeName, "an exchange was declared with name {0}", exchangeName);
 
-            var exchange = node.Exchanges.First();
+            var exchange = node.Exchanges[exchangeName];
             AssertExchangeDetails(exchange, exchangeName, false, null, false, null);
         }
 
@@ -162,20 +163,19 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDeclareNoWait(exchange: exchangeName, type: exchangeType, durable: isDurable, autoDelete: isAutoDelete, arguments: arguments);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(1));
+            node.Exchanges.Should().ContainKey(exchangeName, "an exchange was declared with name {0}", exchangeName);
 
-            var exchange = node.Exchanges.First();
+            var exchange = node.Exchanges[exchangeName];
             AssertExchangeDetails(exchange, exchangeName, isAutoDelete, arguments, isDurable, exchangeType);
         }
 
-        private static void AssertExchangeDetails(KeyValuePair<string, Exchange> exchange, string exchangeName, bool isAutoDelete, IDictionary<string, object> arguments, bool isDurable, string exchangeType)
+        private static void AssertExchangeDetails(Exchange exchange, string exchangeName, bool isAutoDelete, IDictionary<string, object> arguments, bool isDurable, string exchangeType)
         {
-            Assert.That(exchange.Key, Is.EqualTo(exchangeName));
-            Assert.That(exchange.Value.AutoDelete, Is.EqualTo(isAutoDelete));
-            Assert.That(exchange.Value.Arguments, Is.EqualTo(arguments));
-            Assert.That(exchange.Value.IsDurable, Is.EqualTo(isDurable));
-            Assert.That(exchange.Value.Name, Is.EqualTo(exchangeName));
-            Assert.That(exchange.Value.Type, Is.EqualTo(exchangeType));
+            Assert.That(exchange.AutoDelete, Is.EqualTo(isAutoDelete));
+            Assert.That(exchange.Arguments, Is.EqualTo(arguments));
+            Assert.That(exchange.IsDurable, Is.EqualTo(isDurable));
+            Assert.That(exchange.Name, Is.EqualTo(exchangeName));
+            Assert.That(exchange.Type, Is.EqualTo(exchangeType));
         }
 
         [Test]
@@ -192,7 +192,7 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDelete(exchange: exchangeName);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(0));
+            node.Exchanges.Should().NotContainKey(exchangeName, "the exchange with name {0} was deleted", exchangeName);
         }
 
         [Test]
@@ -211,7 +211,7 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDelete(exchange: exchangeName, ifUnused: ifUnused);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(0));
+            node.Exchanges.Should().NotContainKey(exchangeName, "the exchange with name {0} was deleted", exchangeName);
         }
 
         [Test]
@@ -230,7 +230,7 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDeleteNoWait(exchange: exchangeName, ifUnused: ifUnused);
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(0));
+            node.Exchanges.Should().NotContainKey(exchangeName, "the exchange with name {0} was deleted", exchangeName);
         }
 
         [Test]
@@ -247,7 +247,7 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
             model.ExchangeDelete(exchange: "someOtherExchange");
 
             // Assert
-            Assert.That(node.Exchanges, Has.Count.EqualTo(1));
+            node.Exchanges.Should().NotContainKey("someOtherExchange", "the exchange with name {0} never existed", "someOtherExchange");
         }
 
         [Test]
@@ -399,6 +399,8 @@ namespace RabbitMQ.Fakes.DotNetCore.Tests
 
             // Assert
             Assert.That(node.Queues, Has.Count.EqualTo(1));
+
+            node.DefaultExchange.Bindings.Should().ContainKey(queueName, "all newly declared queues are implicitly bound to the default exchange");
 
             var queue = node.Queues.First();
             AssertQueueDetails(queue, queueName, isAutoDelete, arguments, isDurable, isExclusive);

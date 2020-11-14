@@ -416,6 +416,14 @@ namespace RabbitMQ.Fakes.DotNetStandard
             Func<string, Queue, Queue> updateFunction = (name, existing) => existing;
             _server.Queues.AddOrUpdate(queue, queueInstance, updateFunction);
 
+            var exchangeBinding = new ExchangeQueueBinding
+            {
+                RoutingKey = queueInstance.Name,
+                Exchange = _server.DefaultExchange,
+                Queue = queueInstance
+            };
+            _server.DefaultExchange.Bindings.AddOrUpdate(exchangeBinding.RoutingKey, exchangeBinding, (routingKey, existing) => existing);
+
             return new QueueDeclareOk(queue, 0, 0);
         }
 
