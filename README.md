@@ -29,6 +29,7 @@ Below is a table of the version mappings between __RabbitMQ.Fakes.DotNetStandard
 | 1.0.3 | 5.1.0 |
 | 1.0.4 | 5.1.0 |
 | 2.0.0 | 6.2.1 |
+| 2.1.0 | 6.2.1 |
 
 # Requirements
 * [.NET runtime that supports .NET standard 2.0 libraries](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)

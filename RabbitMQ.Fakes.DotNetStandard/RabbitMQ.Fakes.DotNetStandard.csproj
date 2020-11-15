@@ -6,12 +6,12 @@
     <Description>Fake RabbitMQ implementation written in .NET Standard. Based off of RabbitMQ.Fakes (https://github.com/Parametric/RabbitMQ.Fakes)</Description>
     <PackageTags>RabbitMQ AMQP Fake Fakes</PackageTags>
     <RepositoryUrl>https://github.com/KyleCrowley/RabbitMQ.Fakes.DotNetStandard</RepositoryUrl>
-    <Version>2.0.0</Version>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
-    <PackageReleaseNotes>v2.0.0
-BREAKING CHANGE: Upgraded RabbitMQ.Client to version 6.2.1.
-BREAKING CHANGE: Modified Fakes to support changes (access modifiers, etc.) made between 5.* and 6.* in the RabbitMQ.Client library.</PackageReleaseNotes>
+    <Version>2.1.0</Version>
+    <AssemblyVersion>2.1.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
+    <PackageReleaseNotes>v2.1.0:
+
+FEATURE: Implemented RabbitMQ default exchange functionality. The default exchange is created upon creation of a RabbitServer object, and all queues created during the server's lifetime are automatically bound to the default exchange.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
