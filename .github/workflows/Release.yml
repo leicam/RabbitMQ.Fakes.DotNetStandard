@@ -1,0 +1,68 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  # Project name to pack and publish
+  PROJECT_NAME: RabbitMQ.Fakes.DotNetStandard
+
+  # GitHub Packages Feed settings
+  GITHUB_FEED: https://nuget.pkg.github.com/KyleCrowley/
+  GITHUB_USER: KyleCrowley
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+  # NuGet settings
+  NUGET_FEED: https://api.nuget.org/v3/index.json
+  NUGET_KEY: ${{ secrets.NUGET_KEY }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: aarnott/nbgv@v0.4
+        id: nbgv
+
+      - name: Output Version
+        run: echo ${{ steps.nbgv.outputs.SemVer2 }}
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore /p:Version=${{ steps.nbgv.outputs.NuGetPackageVersion }}
+      
+      - name: Pack
+        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source $PROJECT_NAME/$PROJECT_NAME.csproj
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: nupkg
+          path: ./${{ env.PROJECT_NAME }}/bin/Release/*.nupkg
+  push:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: nupkg
+      
+      - name: Push to NuGet
+        run: dotnet nuget push ./nupkg/*.nupkg --source $NUGET_FEED --skip-duplicate --api-key $NUGET_KEY
