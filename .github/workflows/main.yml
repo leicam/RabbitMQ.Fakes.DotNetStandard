@@ -90,7 +90,7 @@ jobs:
           echo Version: $VERSION
           VERSION="${VERSION//v}"
           echo Clean Version: $VERSION
-          dotnet pack -v normal -c Release --no-restore --include-source --include-symbols -p:SymbolPackageFormat=snupkg -p:PackageVersion=$GITHUB_RUN_ID $PROJECT_NAME/$PROJECT_NAME.*proj
+          dotnet pack -v normal -c Release --include-source --include-symbols -p:SymbolPackageFormat=snupkg -p:PackageVersion=$VERSION -o nupkg $PROJECT_NAME/$PROJECT_NAME.*proj
       - name: Push to NuGet feed
         # The symbols package (snupkg) will be pushed alongside the package itself (nupkg). No need to use a regex.
         # https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg#publishing-a-symbol-package
