@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: nupkg
-          path: ./${{ env.PROJECT_NAME }}/bin/Release/$PROJECT_NAME.*[n|sn]upkg
+          path: ./${{ env.PROJECT_NAME }}/bin/Release/$PROJECT_NAME.$GITHUB_RUN_ID.*[n|sn]upkg
   prerelease:
     needs: build
     if: github.ref == 'refs/heads/develop'
@@ -94,4 +94,4 @@ jobs:
       - name: Push to NuGet feed
         # The symbols package (snupkg) will be pushed alongside the package itself (nupkg). No need to use a regex.
         # https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg#publishing-a-symbol-package
-        run: dotnet nuget push ./nupkg/$PROJECT_NAME.nupkg --source $NUGET_FEED --skip-duplicate --api-key $NUGET_KEY
+        run: dotnet nuget push ./nupkg/$PROJECT_NAME.$VERSION.nupkg --source $NUGET_FEED --skip-duplicate --api-key $NUGET_KEY
