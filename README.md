@@ -1,8 +1,6 @@
 # RabbitMQ.Fakes.DotNetStandard
 
-[![NuGet Version and Downloads count](https://buildstats.info/nuget/RabbitMQ.Fakes.DotNetStandard)](https://www.nuget.org/packages/RabbitMQ.Fakes.DotNetStandard)
-
-__RabbitMQ.Fakes.DotNetStandard__ is a .NET Standard 2.0 library (forked from the [RabbitMQ.Fakes](https://github.com/Parametric/RabbitMQ.Fakes) library) that contains fake implementations of the interfaces defined in the __[RabbitMQ.Client](https://github.com/rabbitmq/rabbitmq-dotnet-client)__ library.
+__RabbitMQ.Fakes.DotNetStandard__ is a .NET Standard 2.0 library (forked from the [RabbitMQ.Fakes](https://github.com/paulmccallick/RabbitMQ.Fakes) and [RabbitMQ.Fakes.DotNetStandard](https://github.com/KyleCrowley/RabbitMQ.Fakes.DotNetStandard) library) that contains fake implementations of the interfaces defined in the __[RabbitMQ.Client](https://github.com/rabbitmq/rabbitmq-dotnet-client)__ library.
 
 The implementation is entirely in-memory, which eliminates the dependency on a live RabbitMQ server for unit testing.
 
